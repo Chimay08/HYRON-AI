@@ -1,0 +1,15 @@
+{
+  "name": "sample-storefront",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sample manifest with intentionally outdated real packages for a live OSV.dev scan.",
+  "dependencies": {
+    "lodash": "4.17.15",
+    "minimist": "1.2.0",
+    "express": "^4.17.1",
+    "axios": "0.21.0"
+  },
+  "devDependencies": {
+    "prettier": "^2.0.5"
+  }
+}

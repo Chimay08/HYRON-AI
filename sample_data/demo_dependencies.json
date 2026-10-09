@@ -1,0 +1,122 @@
+{
+  "synthetic": true,
+  "notice": "SYNTHETIC DEMO DATA. Every package (@hyron-demo/*), advisory (HYRON-DEMO-*), KEV entry and EPSS value in this file is fictional and exists only to demonstrate HYRON AI. None of it describes a real vulnerability.",
+  "projects": [
+    {
+      "name": "checkout-service",
+      "ecosystem": "npm",
+      "dependencies": [
+        {
+          "name": "@hyron-demo/http-client", "version": "2.3.0", "scope": "production",
+          "dependencies": [
+            { "name": "@hyron-demo/url-parser", "version": "1.4.2" }
+          ]
+        },
+        { "name": "@hyron-demo/logger", "version": "0.9.1", "scope": "production" },
+        { "name": "@hyron-demo/ui-kit", "version": "1.0.0", "scope": "production" }
+      ]
+    },
+    {
+      "name": "payments-api",
+      "ecosystem": "npm",
+      "dependencies": [
+        { "name": "@hyron-demo/url-parser", "version": "1.4.2", "scope": "production" },
+        { "name": "@hyron-demo/logger", "version": "0.9.1", "scope": "production" }
+      ]
+    },
+    {
+      "name": "admin-portal",
+      "ecosystem": "npm",
+      "dependencies": [
+        { "name": "@hyron-demo/ui-kit", "version": "1.0.0", "scope": "production" },
+        {
+          "name": "@hyron-demo/test-harness", "version": "3.1.0", "scope": "development",
+          "dependencies": [
+            {
+              "name": "@hyron-demo/http-client", "version": "2.3.0",
+              "dependencies": [
+                { "name": "@hyron-demo/url-parser", "version": "1.4.2" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "reporting-worker",
+      "ecosystem": "npm",
+      "dependencies": [
+        {
+          "name": "@hyron-demo/config-loader", "version": "1.2.0", "scope": "production",
+          "dependencies": [
+            { "name": "@hyron-demo/yaml-lite", "version": "2.0.0" }
+          ]
+        },
+        {
+          "name": "@hyron-demo/http-client", "version": "2.3.0", "scope": "production",
+          "dependencies": [
+            { "name": "@hyron-demo/url-parser", "version": "1.4.2" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "docs-site",
+      "ecosystem": "npm",
+      "dependencies": [
+        {
+          "name": "@hyron-demo/static-gen", "version": "4.0.0", "scope": "development",
+          "dependencies": [
+            { "name": "@hyron-demo/markdown-lite", "version": "1.1.0" }
+          ]
+        }
+      ]
+    }
+  ],
+  "vulnerabilities": [
+    {
+      "id": "HYRON-DEMO-2026-0001",
+      "summary": "[SYNTHETIC] Crafted URLs bypass host validation in @hyron-demo/url-parser, enabling request forgery.",
+      "severity": [{ "type": "CVSS_V3", "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H" }],
+      "affected": [{
+        "package": { "ecosystem": "npm", "name": "@hyron-demo/url-parser" },
+        "ranges": [{ "type": "SEMVER", "events": [{ "introduced": "1.0.0" }, { "fixed": "1.4.5" }] }]
+      }],
+      "references": []
+    },
+    {
+      "id": "HYRON-DEMO-2026-0002",
+      "summary": "[SYNTHETIC] @hyron-demo/logger writes request headers, including auth tokens, to logs.",
+      "severity": [{ "type": "CVSS_V3", "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N" }],
+      "affected": [{
+        "package": { "ecosystem": "npm", "name": "@hyron-demo/logger" },
+        "ranges": [{ "type": "SEMVER", "events": [{ "introduced": "0" }, { "fixed": "0.9.4" }] }]
+      }],
+      "references": []
+    },
+    {
+      "id": "HYRON-DEMO-2026-0003",
+      "summary": "[SYNTHETIC] Deeply nested documents cause unbounded recursion in @hyron-demo/yaml-lite (denial of service).",
+      "severity": [{ "type": "CVSS_V3", "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H" }],
+      "affected": [{
+        "package": { "ecosystem": "npm", "name": "@hyron-demo/yaml-lite" },
+        "ranges": [{ "type": "SEMVER", "events": [{ "introduced": "2.0.0" }] }]
+      }],
+      "references": []
+    },
+    {
+      "id": "HYRON-DEMO-2026-0004",
+      "summary": "[SYNTHETIC] Old @hyron-demo/http-client 1.x releases follow redirects to file:// URLs. Present to show version-range checking: 2.3.0 is NOT affected.",
+      "severity": [{ "type": "CVSS_V3", "score": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:N/A:N" }],
+      "affected": [{
+        "package": { "ecosystem": "npm", "name": "@hyron-demo/http-client" },
+        "ranges": [{ "type": "SEMVER", "events": [{ "introduced": "1.0.0" }, { "fixed": "2.0.0" }] }]
+      }],
+      "references": []
+    }
+  ],
+  "exploit_intel": {
+    "kev": ["HYRON-DEMO-2026-0001"],
+    "epss": { "HYRON-DEMO-2026-0002": 0.35 }
+  }
+}

@@ -1,0 +1,7 @@
+# Sample manifest with intentionally outdated real packages for a live OSV.dev scan.
+flask==2.0.1
+jinja2==2.11.2
+requests==2.25.0
+urllib3==1.26.4
+pyyaml>=5.3
+numpy
