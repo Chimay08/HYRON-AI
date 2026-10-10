@@ -35,7 +35,7 @@ export default function Remediation() {
     <>
       <PageIntro
         title="Remediation center"
-        description="Ordered by HYRON Risk Score, then production exposure. Fixed versions come from advisory data; compatibility is not verified and nothing is changed automatically."
+        description="Ordered by V-RPS, then production exposure. Fixed versions come from advisory data; compatibility is not verified and nothing is changed automatically."
         actions={
           <>
             <ScanPicker />

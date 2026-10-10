@@ -22,7 +22,7 @@ SYSTEM_PROMPT = (
     "The JSON you receive is the ONLY source of truth: never invent CVEs, advisories, versions, exploit "
     "activity, compatibility guarantees or fixes that are not in it. If a field is null or unknown, say the "
     "evidence is incomplete. Projects are 'potentially affected': reachability in a dependency graph does "
-    "not prove exploitability. The 'HYRON Risk Score' is a project heuristic, not an industry standard. "
+    "not prove exploitability. V-RPS is a project heuristic, not an industry standard. "
     "If the data is marked simulated/synthetic, say clearly that it is demo data. Use concise Markdown "
     "with these headings: What it means, Who may be affected, Why it is prioritised, Supported fix, "
     "Compatibility checks, Verify before deploying. Under 350 words."
@@ -65,7 +65,7 @@ def explain_finding(f: Finding) -> str:
         f"{f.package}@{f.version} matches {v.id}{demo}: {v.summary or 'no summary provided'} "
         f"Severity {sev}; {_exploit_text(f)}. Used {' and '.join(reach) or 'by no scanned project'} - "
         f"potentially affected, exploitability not established. "
-        f"HYRON Risk Score {f.max_risk.score}/100 ({f.max_risk.priority}). {fix} {basis}{caveat}"
+        f"V-RPS {f.max_risk.score}/100 ({f.max_risk.priority}). {fix} {basis}{caveat}"
     )
 
 
@@ -91,12 +91,14 @@ def copilot_finding(report: ScanReport, f: Finding) -> str:
         "Being reachable in the dependency graph does not prove the vulnerable code is executed.",
         "",
         "### Why it is prioritised",
-        f"HYRON Risk Score {f.max_risk.score}/100 ({f.max_risk.priority}) = 100 x ({f.max_risk.factors.cvss}/10) x "
-        f"(0.2 + 0.8 x {f.max_risk.factors.exploit_signal:.3f}) x {f.max_risk.factors.runtime_factor}.",
+        f"V-RPS {f.max_risk.score}/100 ({f.max_risk.priority}) = "
+        f"0.35({f.max_risk.factors.severity_score}) + 0.30({f.max_risk.factors.exploit_score}) + "
+        f"0.20({f.max_risk.factors.exposure_score}) + 0.15({f.max_risk.factors.propagation_score}).",
         f"- Severity: CVSS {f.max_risk.factors.cvss} ({f.max_risk.factors.cvss_source})",
         f"- Exploitability: {_exploit_text(f)}",
         f"- Exposure: {f.exposure.production_projects} production, {f.exposure.development_only_projects} dev-only, "
         f"{f.exposure.unknown_context_projects} unknown-context project(s)",
+        f"- Propagation: {f.exposure.affected_projects} distinct affected project(s)",
     ]
     if f.max_risk.missing_data:
         lines.append(f"- Missing evidence: {', '.join(f.max_risk.missing_data)}")
@@ -141,7 +143,7 @@ def deterministic_summary(report: ScanReport) -> str:
         target = step.recommended_version or "no known fix"
         lines.append(
             f"{step.order}. {step.package} {step.current_version} -> {target} "
-            f"(HYRON Risk Score {step.max_risk_score}, {len(step.affected_projects)} project(s))"
+            f"(V-RPS {step.max_risk_score}, {len(step.affected_projects)} project(s))"
         )
     if s.unscanned_packages:
         lines += ["", f"{s.unscanned_packages} package(s) were not scanned - their exposure is unknown."]

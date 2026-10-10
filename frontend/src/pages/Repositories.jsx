@@ -66,7 +66,7 @@ export default function Repositories() {
                 <div className="mt-4 grid grid-cols-3 gap-2 text-center">
                   <div><p className="text-lg font-semibold text-white">{latest.summary.total_packages}</p><p className="text-[11px] text-slate-500">packages</p></div>
                   <div><p className="text-lg font-semibold text-orange-300">{latest.summary.total_findings}</p><p className="text-[11px] text-slate-500">findings</p></div>
-                  <div><p className="text-lg font-semibold text-red-300">{latest.summary.high_priority_findings}</p><p className="text-[11px] text-slate-500">high priority</p></div>
+                  <div><p className="text-lg font-semibold text-red-300">{latest.summary.high_priority_findings}</p><p className="text-[11px] text-slate-500">high / critical</p></div>
                 </div>
                 <p className="mt-3 text-xs text-slate-500">
                   Last scanned {formatDate(latest.created_at)} - {repo.scans.length} scan(s)

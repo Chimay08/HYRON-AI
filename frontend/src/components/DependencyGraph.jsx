@@ -162,7 +162,7 @@ export default function DependencyGraph({ graph, filters, selectedId, onSelect, 
             {hover.type === "project" ? "Project" : "Package"} - {STATUS_LABELS[hover.status] ?? hover.status}
           </p>
           {hover.score != null && (
-            <p className="mt-0.5 text-slate-400">Highest HYRON Risk <span className="font-mono text-slate-200">{hover.score.toFixed(1)}</span> ({hover.priority})</p>
+            <p className="mt-0.5 text-slate-400">Highest V-RPS <span className="font-mono text-slate-200">{hover.score.toFixed(1)}</span> ({hover.priority})</p>
           )}
           {hover.advisories > 0 && <p className="mt-0.5 text-slate-400">{hover.advisories} advisor{hover.advisories === 1 ? "y" : "ies"}</p>}
           <p className="mt-1 text-[10px] text-slate-500">Click to trace its blast radius</p>

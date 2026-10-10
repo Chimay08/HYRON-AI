@@ -1,8 +1,20 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: "Segoe UI Variable", "Aptos", "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+}
+
+:root {
+  --hyron-ink: #071311;
+  --hyron-panel: #0b1b18;
+  --hyron-raised: #102521;
+  --hyron-line: #24413b;
+  --hyron-teal: #2aaba1;
+  --hyron-teal-bright: #43c8bd;
+  --hyron-sand: #ffe2af;
+  --hyron-orange: #ea7432;
+  --hyron-red: #c84d52;
 }
 
 html,
@@ -13,15 +25,28 @@ body,
 
 body {
   margin: 0;
-  background: #020617;
-  color: #e2e8f0;
+  background: var(--hyron-ink);
+  color: #e7efed;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   color-scheme: dark;
 }
 
+body::before {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  content: "";
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(42, 171, 161, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(42, 171, 161, 0.035) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: linear-gradient(to bottom, black, transparent 70%);
+}
+
 :focus-visible {
-  outline: 2px solid #2dd4bf;
+  outline: 2px solid var(--hyron-teal-bright);
   outline-offset: 2px;
 }
 
@@ -30,7 +55,89 @@ body {
 }
 
 select option {
-  background: #0f172a;
+  background: var(--hyron-panel);
+}
+
+/* HYRON command-center skin. The app keeps Tailwind's semantic utility
+   vocabulary, while these rules give every screen one deliberate system. */
+.app-shell,
+.bg-slate-950 { background-color: var(--hyron-ink) !important; }
+.bg-slate-950\/90 { background-color: rgba(7, 19, 17, 0.94) !important; }
+.bg-slate-900,
+.bg-slate-900\/60 { background-color: var(--hyron-panel) !important; }
+.bg-slate-800,
+.bg-slate-800\/50,
+.bg-slate-800\/70,
+.bg-slate-800\/80 { background-color: var(--hyron-raised) !important; }
+.border-slate-800 { border-color: var(--hyron-line) !important; }
+.border-slate-700 { border-color: #36534d !important; }
+
+.text-teal-200,
+.text-teal-300,
+.text-teal-400 { color: var(--hyron-teal-bright) !important; }
+.bg-teal-500 { background-color: var(--hyron-teal) !important; }
+.bg-teal-500\/10 { background-color: rgba(42, 171, 161, 0.12) !important; }
+.border-teal-500\/30 { border-color: rgba(67, 200, 189, 0.4) !important; }
+.hover\:bg-teal-400:hover { background-color: var(--hyron-teal-bright) !important; }
+.text-orange-300 { color: #f08a51 !important; }
+.text-amber-300,
+.text-amber-200 { color: var(--hyron-sand) !important; }
+.text-red-300,
+.text-red-200 { color: #ef777b !important; }
+
+/* Compact, engineered geometry instead of friendly consumer-card styling. */
+.rounded-xl { border-radius: 3px !important; }
+.rounded-2xl { border-radius: 4px !important; }
+.rounded-lg { border-radius: 3px !important; }
+.rounded-md { border-radius: 2px !important; }
+
+.app-chrome {
+  box-shadow: none;
+}
+
+.app-chrome header,
+header.app-chrome {
+  border-bottom-color: rgba(42, 171, 161, 0.26) !important;
+}
+
+main section {
+  box-shadow: inset 3px 0 0 rgba(42, 171, 161, 0.16);
+}
+
+main section:hover {
+  border-color: #31584f !important;
+}
+
+h1, h2, h3 {
+  letter-spacing: -0.025em;
+}
+
+h1::before {
+  content: "// ";
+  color: var(--hyron-teal);
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+
+button,
+a,
+input,
+select {
+  transition-duration: 140ms !important;
+}
+
+::selection {
+  background: var(--hyron-teal);
+  color: var(--hyron-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Printable reports: light background, dark text, no app chrome. */

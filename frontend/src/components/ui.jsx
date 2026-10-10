@@ -41,7 +41,7 @@ export function Panel({ title, description, actions, children, className, bodyCl
       {(title || actions) && (
         <header className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-800 px-5 py-4">
           <div className="min-w-0">
-            {title && <h2 className="text-sm font-semibold text-white">{title}</h2>}
+            {title && <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.08em] text-white">{title}</h2>}
             {description && <p className="mt-0.5 text-xs text-slate-400">{description}</p>}
           </div>
           {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
@@ -56,7 +56,7 @@ export function PageIntro({ title, description, actions }) {
   return (
     <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div className="min-w-0">
-        <h1 className="text-xl font-semibold tracking-tight text-white">{title}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-white">{title}</h1>
         {description && <p className="mt-1 max-w-3xl text-sm text-slate-400">{description}</p>}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
@@ -122,11 +122,11 @@ export function SeverityBadge({ label, score, estimated }) {
   );
 }
 
-const PRIO_TONE = { high: "red", medium: "amber", low: "slate" };
+const PRIO_TONE = { critical: "red", high: "orange", medium: "amber", low: "slate" };
 
 export function ScoreBadge({ score, priority, provisional, urgent }) {
   const badge = (
-    <Badge tone={PRIO_TONE[priority]} title={provisional ? "Provisional: some evidence was missing" : "HYRON Risk Score"}>
+    <Badge tone={PRIO_TONE[priority]} title={provisional ? "Provisional: some evidence was missing" : "V-RPS"}>
       <span className="font-mono">{score.toFixed(1)}</span>
       <span className="uppercase opacity-80">{priority}</span>
       {provisional && <span title="provisional">~</span>}

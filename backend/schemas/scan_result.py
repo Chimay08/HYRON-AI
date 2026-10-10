@@ -62,13 +62,18 @@ class RiskFactors(BaseModel):
     exploit_source: Literal["cisa_kev", "epss", "unknown"]
     runtime_factor: float
     runtime_context: Scope
+    severity_score: float
+    exploit_score: float
+    exposure_score: float
+    propagation_score: float
+    affected_projects: int
     formula: str
 
 
 class RiskScore(BaseModel):
     """HYRON Risk Score - a project-specific heuristic, not an industry standard."""
     score: float
-    priority: Literal["high", "medium", "low"]
+    priority: Literal["critical", "high", "medium", "low"]
     factors: RiskFactors
     # True when any factor used a documented fallback instead of evidence.
     provisional: bool = False
@@ -125,7 +130,7 @@ class PatchStep(BaseModel):
     vulnerabilities: list[str]
     advisory_urls: list[str] = Field(default_factory=list)
     max_risk_score: float
-    priority: Literal["high", "medium", "low"]
+    priority: Literal["critical", "high", "medium", "low"]
     urgent_review: bool = False
     affected_projects: list[str]
     actions: list[str]

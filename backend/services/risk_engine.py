@@ -1,22 +1,22 @@
-"""HYRON Risk Score - a transparent, project-specific heuristic (NOT an industry standard).
+"""V-RPS - HYRON's transparent remediation-priority heuristic (not a standard).
 
-    HYRON Risk Score = 100 x (CVSS / 10) x (0.2 + 0.8 x Exploit Signal) x Runtime Factor
+    V-RPS = 0.35S + 0.30E + 0.20X + 0.15P
 
-The three inputs are reported separately so severity, exploitability and
-exposure are never blended invisibly:
+All four normalized 0-100 inputs are reported separately:
 
 Severity (CVSS)
     From the advisory's CVSS v3 vector. If only a qualitative label exists
     (e.g. GHSA "HIGH"), the band mid-point is used and flagged. If nothing
     exists, UNKNOWN_CVSS is used, the score is marked provisional and the
     gap is listed in `missing_data`.
-Exploitability (Exploit Signal)
-    1.0 when the CVE is in CISA KEV, else its FIRST EPSS probability.
-    No evidence -> UNKNOWN_EXPLOIT_SIGNAL (0.0); the 0.2 floor keeps severity
-    contributing. Missing evidence is never treated as proof of safety.
-Exposure (Runtime Factor)
-    1.0 for production paths, 0.4 for development-only paths. Unknown context
-    is scored like production (1.0) and flagged.
+Exploitability (E)
+    100 when listed in CISA KEV, otherwise FIRST EPSS probability x 100.
+    Missing evidence uses a disclosed neutral placeholder of 50.
+Exposure (X)
+    100 for production, 40 for development-only, and a disclosed neutral
+    placeholder of 50 when the dependency context is unknown.
+Propagation (P)
+    20 points per distinct affected project, capped at 100 (five projects).
 
 All weights live here and nowhere else.
 """
@@ -26,17 +26,18 @@ from __future__ import annotations
 from schemas.scan_result import RiskFactors, RiskScore
 from schemas.vulnerability import VulnerabilityInfo
 
-SCORE_NAME = "HYRON Risk Score"
-FORMULA = "100 x (CVSS/10) x (0.2 + 0.8 x ExploitSignal) x RuntimeFactor"
+SCORE_NAME = "V-RPS"
+FORMULA = "0.35S + 0.30E + 0.20X + 0.15P"
 
-EXPLOIT_FLOOR = 0.2
 KEV_SIGNAL = 1.0
-UNKNOWN_EXPLOIT_SIGNAL = 0.0
+UNKNOWN_EXPLOIT_SIGNAL = 0.5
 UNKNOWN_CVSS = 5.0
-RUNTIME_FACTORS = {"production": 1.0, "development": 0.4, "unknown": 1.0}
+RUNTIME_FACTORS = {"production": 1.0, "development": 0.4, "unknown": 0.5}
+PROPAGATION_POINTS_PER_PROJECT = 20.0
 
-HIGH_THRESHOLD = 50.0
-MEDIUM_THRESHOLD = 25.0
+CRITICAL_THRESHOLD = 80.0
+HIGH_THRESHOLD = 60.0
+MEDIUM_THRESHOLD = 35.0
 
 
 def describe() -> dict:
@@ -46,23 +47,31 @@ def describe() -> dict:
         "formula": FORMULA,
         "standard": False,
         "weights": {
-            "exploit_floor": EXPLOIT_FLOOR, "kev_signal": KEV_SIGNAL,
+            "severity": 0.35, "exploit_evidence": 0.30, "exposure": 0.20, "propagation": 0.15,
+            "kev_signal": KEV_SIGNAL,
             "runtime_factors": RUNTIME_FACTORS,
+            "propagation_points_per_project": PROPAGATION_POINTS_PER_PROJECT,
         },
         "fallbacks": {
             "cvss_unknown": UNKNOWN_CVSS, "exploit_unknown": UNKNOWN_EXPLOIT_SIGNAL,
             "runtime_unknown": RUNTIME_FACTORS["unknown"],
         },
-        "priority_thresholds": {"high": HIGH_THRESHOLD, "medium": MEDIUM_THRESHOLD},
+        "priority_thresholds": {"critical": CRITICAL_THRESHOLD, "high": HIGH_THRESHOLD, "medium": MEDIUM_THRESHOLD},
         "urgent_review": "Any finding listed in CISA KEV is flagged for urgent review, independent of its score",
     }
 
 
-def risk_formula(cvss: float, exploit_signal: float, runtime_factor: float) -> float:
-    return round(100 * (cvss / 10) * (EXPLOIT_FLOOR + (1 - EXPLOIT_FLOOR) * exploit_signal) * runtime_factor, 1)
+def risk_formula(cvss: float, exploit_signal: float, runtime_factor: float, affected_projects: int = 1) -> float:
+    s = max(0.0, min(100.0, cvss * 10))
+    e = max(0.0, min(100.0, exploit_signal * 100))
+    x = max(0.0, min(100.0, runtime_factor * 100))
+    p = max(0.0, min(100.0, affected_projects * PROPAGATION_POINTS_PER_PROJECT))
+    return round(0.35 * s + 0.30 * e + 0.20 * x + 0.15 * p, 1)
 
 
 def priority_for(score: float) -> str:
+    if score >= CRITICAL_THRESHOLD:
+        return "critical"
     if score >= HIGH_THRESHOLD:
         return "high"
     if score >= MEDIUM_THRESHOLD:
@@ -70,7 +79,7 @@ def priority_for(score: float) -> str:
     return "low"
 
 
-def score_vulnerability(vuln: VulnerabilityInfo, runtime_context: str) -> RiskScore:
+def score_vulnerability(vuln: VulnerabilityInfo, runtime_context: str, affected_projects: int = 1) -> RiskScore:
     notes: list[str] = []
     missing: list[str] = []
     provisional = False
@@ -92,6 +101,7 @@ def score_vulnerability(vuln: VulnerabilityInfo, runtime_context: str) -> RiskSc
         signal, source = vuln.epss, "epss"
     else:
         signal, source = UNKNOWN_EXPLOIT_SIGNAL, "unknown"
+        provisional = True
         missing.append("exploit_evidence")
         if vuln.in_kev is None:
             notes.append("Exploit evidence unavailable (KEV/EPSS not retrieved) - not evidence of safety")
@@ -101,9 +111,15 @@ def score_vulnerability(vuln: VulnerabilityInfo, runtime_context: str) -> RiskSc
     runtime_factor = RUNTIME_FACTORS.get(runtime_context, 1.0)
     if runtime_context == "unknown":
         missing.append("runtime_context")
-        notes.append("Runtime context unknown: scored like production (factor 1.0)")
+        notes.append("Runtime context unknown: disclosed neutral exposure placeholder 50/100 used")
 
-    score = risk_formula(cvss, signal, runtime_factor)
+    if runtime_context == "unknown":
+        provisional = True
+    severity_score = round(cvss * 10, 1)
+    exploit_score = round(signal * 100, 1)
+    exposure_score = round(runtime_factor * 100, 1)
+    propagation_score = min(100.0, max(0, affected_projects) * PROPAGATION_POINTS_PER_PROJECT)
+    score = risk_formula(cvss, signal, runtime_factor, affected_projects)
     return RiskScore(
         score=score,
         priority=priority_for(score),
@@ -111,6 +127,9 @@ def score_vulnerability(vuln: VulnerabilityInfo, runtime_context: str) -> RiskSc
             cvss=cvss, cvss_source=vuln.cvss_source,
             exploit_signal=signal, exploit_source=source,
             runtime_factor=runtime_factor, runtime_context=runtime_context,
+            severity_score=severity_score, exploit_score=exploit_score,
+            exposure_score=exposure_score, propagation_score=propagation_score,
+            affected_projects=max(0, affected_projects),
             formula=FORMULA,
         ),
         provisional=provisional,

@@ -123,7 +123,7 @@ export default function Overview() {
         { label: "Repositories scanned", value: repoCount, sub: `${latest.length} source(s) total`, icon: FolderGit2 },
         { label: "Packages analysed", value: sum((s) => s.total_packages), sub: `${sum((s) => s.unscanned_packages)} not scanned`, icon: Boxes, badge: demoBadge },
         { label: "Vulnerabilities", value: sum((s) => s.total_findings), sub: `${sum((s) => s.vulnerable_packages)} vulnerable packages`, icon: ShieldAlert, tone: sum((s) => s.total_findings) ? "orange" : "green", badge: demoBadge },
-        { label: "High priority", value: sum((s) => s.high_priority_findings), sub: "HYRON Risk Score >= 50", icon: Siren, tone: sum((s) => s.high_priority_findings) ? "red" : "green", badge: demoBadge },
+        { label: "High / critical", value: sum((s) => s.high_priority_findings), sub: "V-RPS >= 60", icon: Siren, tone: sum((s) => s.high_priority_findings) ? "red" : "green", badge: demoBadge },
         { label: "Critical severity", value: critical, sub: "CVSS >= 9.0", icon: Layers, tone: critical ? "red" : "green", badge: demoBadge },
         { label: "Affected projects", value: sum((s) => s.affected_projects), sub: `of ${sum((s) => s.total_projects)} projects`, icon: Network, tone: sum((s) => s.affected_projects) ? "amber" : "green", badge: demoBadge },
       ]} />
@@ -154,7 +154,7 @@ export default function Overview() {
           )}
         </Panel>
 
-        <Panel className="xl:col-span-2" title="Risk trend" description="Sum of HYRON Risk Scores per recorded scan, oldest to newest" actions={trend.some((p) => p.demo) ? <Badge tone="violet">Includes Demo Data</Badge> : null}>
+        <Panel className="xl:col-span-2" title="Risk trend" description="Sum of V-RPS values per recorded scan, oldest to newest" actions={trend.some((p) => p.demo) ? <Badge tone="violet">Includes Demo Data</Badge> : null}>
           {trend.length < 2 ? (
             <EmptyState title="Not enough history yet">Run at least two scans to see a trend. Only real recorded scans are plotted - nothing is extrapolated.</EmptyState>
           ) : (

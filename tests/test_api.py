@@ -107,7 +107,7 @@ def test_pr_draft(client):
     draft = client.post(url, headers=WS_A, json={"step_key": scan["patch_plan"][0]["step_key"]}).json()
     assert draft["branch"] == "hyron/upgrade-hyron-demo-url-parser-1.4.5"
     assert "Simulated demo data" in draft["body"] and "- [ ]" in draft["body"]
-    no_fix = scan["patch_plan"][-1]["step_key"]
+    no_fix = next(step["step_key"] for step in scan["patch_plan"] if step["fix_status"] == "no_fix_known")
     assert client.post(url, headers=WS_A, json={"step_key": no_fix}).status_code == 409
 
 

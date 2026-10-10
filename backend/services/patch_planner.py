@@ -198,7 +198,7 @@ def build_patch_plan(
         fixed_text = f"upgrade to {candidate}" if candidate else "no fixed release is known"
         rationale = (
             f"{name}@{current} has {len(group)} matched advisor{'y' if len(group) == 1 else 'ies'} "
-            f"({shown}); highest HYRON Risk Score {max_score} ({priority_for(max_score)}). "
+            f"({shown}); highest V-RPS {max_score} ({priority_for(max_score)}). "
             f"It potentially affects {len(ordered_projects)} project(s), {prod_count} via production or "
             f"unknown-scope paths; {fixed_text}."
         )

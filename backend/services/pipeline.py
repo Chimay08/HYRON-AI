@@ -198,12 +198,13 @@ async def run_scan(
                 AffectedProject(
                     project=g.nodes[i.project]["name"], relation=i.relation,
                     path=[dg.label(g, n) for n in i.path], runtime_context=i.runtime_context,
-                    inferred_link=i.inferred_link, risk=score_vulnerability(m.info, i.runtime_context),
+                    inferred_link=i.inferred_link,
+                    risk=score_vulnerability(m.info, i.runtime_context, len(impacts)),
                 )
                 for i in impacts
             ]
             affected.sort(key=lambda a: (-a.risk.score, a.project))
-            max_risk = affected[0].risk if affected else score_vulnerability(m.info, "unknown")
+            max_risk = affected[0].risk if affected else score_vulnerability(m.info, "unknown", 0)
             exposure = Exposure(
                 affected_projects=len(affected),
                 production_projects=sum(a.runtime_context == "production" for a in affected),
@@ -295,7 +296,7 @@ async def run_scan(
 
     # ---- summary
     sev_counts: dict[str, int] = {}
-    prio_counts = {"high": 0, "medium": 0, "low": 0}
+    prio_counts = {"critical": 0, "high": 0, "medium": 0, "low": 0}
     for f in findings:
         key = f.vulnerability.severity_label or "UNKNOWN"
         key = "LOW" if key == "NONE" else key
@@ -310,7 +311,7 @@ async def run_scan(
         unscanned_packages=len(gaps),
         vulnerable_packages=len(vulnerable),
         affected_projects=len({ap.project for f in findings for ap in f.affected_projects}),
-        high_priority_findings=prio_counts["high"],
+        high_priority_findings=prio_counts["critical"] + prio_counts["high"],
         total_findings=len(findings),
         direct_packages=len(direct_pkgs),
         transitive_packages=len(pkg_nodes) - len(direct_pkgs),

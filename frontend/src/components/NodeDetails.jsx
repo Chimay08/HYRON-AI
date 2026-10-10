@@ -41,7 +41,7 @@ export default function NodeDetails({ node, report, graph, onSelect }) {
         <Row label="Ecosystem">{node.ecosystem ?? "-"}</Row>
         {!isProject && <Row label="Version">{node.version ?? "unresolved"}{node.version_status === "range_min" && <Badge tone="amber" className="ml-1">min of range</Badge>}</Row>}
         {!isProject && <Row label="Depth">{node.depth === 1 ? "direct" : node.depth ? `transitive (level ${node.depth})` : "-"}</Row>}
-        {node.max_risk_score != null && <Row label="Highest HYRON Risk"><ScoreBadge score={node.max_risk_score} priority={node.priority ?? "low"} /></Row>}
+        {node.max_risk_score != null && <Row label="Highest V-RPS"><ScoreBadge score={node.max_risk_score} priority={node.priority ?? "low"} /></Row>}
         <Row label="Depends on">{dependsOn.length}</Row>
         <Row label="Dependents">{dependents.length}</Row>
       </div>

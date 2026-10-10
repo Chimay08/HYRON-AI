@@ -23,7 +23,7 @@ function Evidence({ finding, onExplain }) {
   const x = finding.exposure;
   return (
     <div className="space-y-4">
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-4">
         <Factor title="Severity" value={`CVSS ${f.cvss}`}>
           {f.cvss_source === "vector" ? "Computed from the advisory's CVSS v3 vector" :
             f.cvss_source === "severity_label" ? `Estimated from label "${v.severity_label}"` : "Not provided - placeholder used"}
@@ -33,14 +33,16 @@ function Evidence({ finding, onExplain }) {
           {EXPLOIT_TEXT[f.exploit_source]}
           {v.in_kev === null && <p className="mt-1 text-amber-300/80">KEV data unavailable for this scan</p>}
         </Factor>
-        <Factor title="Exposure" value={`${x.affected_projects} project(s)`}>
-          {x.production_projects} production - {x.development_only_projects} dev-only - {x.unknown_context_projects} unknown context.
-          {" "}{x.direct_dependents} direct, {x.transitive_dependents} transitive.
+        <Factor title="Exposure" value={`${f.exposure_score.toFixed(0)}/100`}>
+          Highest-risk path: {f.runtime_context}. {x.production_projects} production, {x.development_only_projects} dev-only, {x.unknown_context_projects} unknown.
+        </Factor>
+        <Factor title="Propagation" value={`${f.propagation_score.toFixed(0)}/100`}>
+          {x.affected_projects} distinct project(s): {x.direct_dependents} direct, {x.transitive_dependents} transitive.
         </Factor>
       </div>
 
       <div className="rounded-lg bg-slate-950 px-3 py-2 font-mono text-xs text-teal-200">
-        HYRON Risk Score = 100 x ({f.cvss}/10) x (0.2 + 0.8 x {f.exploit_signal.toFixed(3)}) x {f.runtime_factor} = {r.score.toFixed(1)}
+        V-RPS = 0.35({f.severity_score.toFixed(0)}) + 0.30({f.exploit_score.toFixed(0)}) + 0.20({f.exposure_score.toFixed(0)}) + 0.15({f.propagation_score.toFixed(0)}) = {r.score.toFixed(1)}
         <span className="ml-2 font-sans text-slate-500">(highest-risk project, {f.runtime_context} context)</span>
       </div>
       {r.notes.length > 0 && (

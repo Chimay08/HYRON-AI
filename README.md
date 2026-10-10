@@ -204,32 +204,32 @@ Unhandled errors return a generic 500 with no stack trace.
 - **Potential exposure:** a library version seen in a public asset URL or CDN path matches an OSV advisory. Unconfirmed.
 - **Confirmed package vulnerability:** always empty. A URL cannot confirm installed packages.
 
-## HYRON Risk Score
+## V-RPS (HYRON Risk Score)
 
 A project-specific prioritisation heuristic, **not an industry standard**. All weights are defined in `backend/services/risk_engine.py`.
 
 ```
-HYRON Risk Score = 100 × (CVSS / 10) × (0.2 + 0.8 × Exploit Signal) × Runtime Factor
+V-RPS = 0.35S + 0.30E + 0.20X + 0.15P
 ```
 
 | Dimension | Evidence | When missing |
 |---|---|---|
-| Severity (CVSS) | Computed from the advisory's CVSS v3 vector | Qualitative label → band midpoint (CRITICAL 9.5, HIGH 8.0, MEDIUM 5.5, LOW 2.0), marked `*`. No severity at all → placeholder 5.0; score marked **provisional** (`~`) |
-| Exploitability | 1.0 if in CISA KEV, otherwise the EPSS probability | 0.0, labelled "unknown" (not evidence of safety); the 0.2 floor keeps severity contributing |
-| Exposure (runtime) | 1.0 production, 0.4 development-only | Unknown context is scored like production (1.0) and flagged |
+| Severity (S) | CVSS × 10 | Qualitative label → band midpoint. No severity → disclosed neutral 50; provisional |
+| Exploit evidence (E) | 100 for CISA KEV, otherwise EPSS × 100 | Disclosed neutral 50; provisional and explicitly unknown |
+| Exposure (X) | 100 production, 40 development-only | Disclosed neutral 50 for unknown context; provisional |
+| Propagation (P) | 20 points per distinct affected project, capped at 100 | Zero when no scanned project is reachable |
 
-Priority: **high** ≥ 50, **medium** ≥ 25, otherwise **low**. Severity, exploitability and exposure (number of production, dev-only and unknown-context projects; direct and transitive dependents) are displayed separately next to every score, together with the substituted formula. `missing_data` lists every fallback used.
+Priority: **critical** ≥ 80, **high** ≥ 60, **medium** ≥ 35, otherwise **low**. All normalized factors and the substituted formula are displayed with each score. `missing_data` lists every fallback used.
 
-**Urgent review.** Any finding listed in CISA KEV is flagged `urgent_review` (shown as an *Urgent review* badge) whatever its score. A known-exploited issue on a development-only path scores 39.2 (medium) but still needs a prompt decision.
+**Urgent review.** Any finding listed in CISA KEV is flagged `urgent_review` whatever its V-RPS band. V-RPS prioritizes remediation; it does not predict exploitability.
 
 Worked examples (asserted in tests):
 
 | Case | Calculation | Score |
 |---|---|---|
-| KEV, production | 100 × 0.98 × 1.00 × 1.0 | **98.0** |
-| KEV, dev-only | 98 × 0.4 | **39.2** |
-| EPSS 0.35, production | 100 × 0.53 × 0.48 × 1.0 | **25.4** |
-| No exploit evidence | 100 × 0.75 × 0.20 × 1.0 | **15.0** |
+| KEV, production, 1 project | .35(98) + .30(100) + .20(100) + .15(20) | **87.3** |
+| KEV, dev-only, 1 project | .35(98) + .30(100) + .20(40) + .15(20) | **75.3** |
+| EPSS 0.35, production, 1 project | .35(53) + .30(35) + .20(100) + .15(20) | **52.0** |
 
 Reachability in the graph is **not** treated as proof of exploitability.
 

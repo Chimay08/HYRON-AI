@@ -50,7 +50,7 @@ def test_demo_workflow(page):
     page.get_by_role("link", name="Vulnerability Findings").click()
     page.wait_for_selector("text=HYRON-DEMO-2026-0001")
     page.locator("tbody tr").first.click()
-    page.wait_for_selector("text=HYRON Risk Score = 100 x (9.8/10)")
+    page.wait_for_selector("text=V-RPS = 0.35(98)")
 
     page.get_by_role("link", name="Dependency Graph").click()
     page.wait_for_selector("canvas")

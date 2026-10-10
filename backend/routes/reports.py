@@ -105,7 +105,7 @@ async def pr_draft(scan_id: str, body: PRDraftRequest, workspace: str = Depends(
         "",
         "### Advisories", advisories,
         "",
-        f"**HYRON Risk Score:** {step.max_risk_score} ({step.priority}) - project heuristic, not a standard.",
+        f"**V-RPS:** {step.max_risk_score} ({step.priority}) - project heuristic, not a standard.",
         "",
         "### Affected projects", *[f"- {p}" for p in step.affected_projects],
         "",

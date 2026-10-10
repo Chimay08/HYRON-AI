@@ -6,6 +6,10 @@ import tailwindcss from "@tailwindcss/vite";
 // or any secret: all keys stay in the backend environment.
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  test: {
+    environment: "jsdom",
+    setupFiles: "./src/test/setup.js",
+  },
   build: { chunkSizeWarningLimit: 1000 },
   server: {
     port: 5173,

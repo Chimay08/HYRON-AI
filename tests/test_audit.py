@@ -225,10 +225,10 @@ def vuln(cvss=9.8, kev=False, epss=None, source="vector"):
 
 
 @pytest.mark.parametrize("v,ctx,expected,priority", [
-    (vuln(9.8, kev=True), "production", 98.0, "high"),       # 100 x 0.98 x 1.0 x 1.0
-    (vuln(9.8, kev=True), "development", 39.2, "medium"),    # 98 x 0.4
-    (vuln(5.3, epss=0.35), "production", 25.4, "medium"),    # 100 x 0.53 x 0.48 x 1.0
-    (vuln(7.5, kev=False), "production", 15.0, "low"),       # no exploit evidence: 0.2 floor
+    (vuln(9.8, kev=True), "production", 87.3, "critical"),
+    (vuln(9.8, kev=True), "development", 75.3, "high"),
+    (vuln(5.3, epss=0.35), "production", 52.0, "medium"),
+    (vuln(7.5, kev=False), "production", 64.2, "high"),
 ])
 def test_documented_score_examples(v, ctx, expected, priority):
     s = score_vulnerability(v, ctx)
@@ -237,23 +237,22 @@ def test_documented_score_examples(v, ctx, expected, priority):
 
 def test_known_exploited_is_flagged_urgent_even_when_score_is_not_high():
     s = score_vulnerability(vuln(9.8, kev=True), "development")
-    assert s.priority == "medium" and s.urgent_review is True
+    assert s.priority == "high" and s.urgent_review is True
     assert any("CISA KEV" in n for n in s.notes)
     assert score_vulnerability(vuln(9.8, epss=0.9), "production").urgent_review is False
 
 
 def test_score_bounds_and_band_edges():
-    assert risk_formula(10.0, 1.0, 1.0) == 100.0
-    assert risk_formula(0.0, 0.0, 0.4) == 0.0
-    assert [priority_for(x) for x in (50.0, 49.9, 25.0, 24.9)] == ["high", "medium", "medium", "low"]
+    assert risk_formula(10.0, 1.0, 1.0, 5) == 100.0
+    assert risk_formula(0.0, 0.0, 0.0, 0) == 0.0
+    assert [priority_for(x) for x in (80.0, 79.9, 60.0, 59.9, 35.0, 34.9)] == ["critical", "high", "high", "medium", "medium", "low"]
 
 
 def test_missing_inputs_are_disclosed_not_treated_as_safe():
     s = score_vulnerability(VulnerabilityInfo(id="T-2", cvss_score=None, cvss_source="unknown", in_kev=None), "unknown")
     assert s.provisional is True
     assert set(s.missing_data) == {"cvss", "exploit_evidence", "runtime_context"}
-    assert s.score > 0  # placeholder CVSS 5.0, floor 0.2, factor 1.0 -> 10.0, not zero
-    assert s.score == 10.0
+    assert s.score == 45.5  # disclosed neutral fallbacks plus one affected project
 
 
 # ----------------------------------------------------- patch planning (§8)
@@ -305,7 +304,7 @@ def test_end_to_end_upload_to_remediation_offline(client, fake_osv):
     assert url["vulnerability"]["match_basis"] == "local_range_check"
     [ap] = url["affected_projects"]
     assert ap["relation"] == "transitive" and ap["path"] == ["web-shop", "http-lib@1.0.0", "url-lib@2.0.0"]
-    assert url["max_risk"]["score"] == 98.0 and url["max_risk"]["urgent_review"] is True
+    assert url["max_risk"]["score"] == 87.3 and url["max_risk"]["urgent_review"] is True
 
     yaml = by_pkg["yaml-lib"]
     assert yaml["affected_projects"][0]["runtime_context"] == "development"

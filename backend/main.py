@@ -7,6 +7,7 @@ Docs: http://localhost:8000/docs
 
 import logging
 import os
+import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -15,6 +16,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 ROOT = Path(__file__).resolve().parent
+# Support both documented development launch styles:
+#   cd backend; python -m uvicorn main:app
+#   cd project; python -m uvicorn backend.main:app
+# The route and service modules intentionally use backend-root imports.
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 load_dotenv(ROOT / ".env")
 load_dotenv(ROOT.parent / ".env")
 

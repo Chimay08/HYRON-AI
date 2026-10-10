@@ -40,7 +40,7 @@ export default function Findings() {
   const intro = (
     <PageIntro
       title="Vulnerability findings"
-      description="Package versions matched to advisories, ranked by HYRON Risk Score. Severity, exploitability and exposure are shown separately."
+      description="Package versions matched to advisories, ranked by V-RPS. Severity, exploit evidence, exposure and propagation are shown separately."
       actions={
         <>
           <ScanPicker />
@@ -84,7 +84,7 @@ export default function Findings() {
                 </select>
                 <select className={selectClass} value={priority} onChange={(e) => setPriority(e.target.value)} aria-label="Priority">
                   <option value="all">All priorities</option>
-                  <option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option>
+                  <option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option>
                 </select>
                 <select className={selectClass} value={ecosystem} onChange={(e) => setEcosystem(e.target.value)} aria-label="Ecosystem">
                   <option value="all">All ecosystems</option>
@@ -114,7 +114,7 @@ export default function Findings() {
             )}
           </Panel>
           <p className="text-xs text-slate-500">
-            * severity estimated from a qualitative label. ~ provisional score (evidence missing). The HYRON Risk Score is a project-specific prioritisation heuristic, not an industry standard.
+            * severity estimated from a qualitative label. ~ provisional score (evidence missing). V-RPS is a project-specific remediation-priority heuristic, not an industry standard.
           </p>
         </div>
       )}

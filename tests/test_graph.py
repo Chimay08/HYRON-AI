@@ -61,11 +61,11 @@ def test_potentially_affected_includes_intermediate_packages(graph):
 # ------------------------------------------------------------------ risk
 
 @pytest.mark.parametrize("cvss,signal,runtime,expected", [
-    (9.8, 1.0, 1.0, 98.0),     # KEV, production
-    (9.8, 1.0, 0.4, 39.2),     # KEV, dev-only
-    (5.3, 0.35, 1.0, 25.4),    # EPSS 0.35
-    (7.5, 0.0, 1.0, 15.0),     # no exploit evidence: 0.2 floor
-    (10.0, 1.0, 1.0, 100.0),
+    (9.8, 1.0, 1.0, 87.3),     # KEV, production, one affected project
+    (9.8, 1.0, 0.4, 75.3),     # KEV, dev-only, one affected project
+    (5.3, 0.35, 1.0, 52.0),    # EPSS 0.35, one affected project
+    (7.5, 0.0, 1.0, 49.2),     # explicit zero exploit signal
+    (10.0, 1.0, 1.0, 88.0),
 ])
 def test_risk_formula(cvss, signal, runtime, expected):
     assert risk_formula(cvss, signal, runtime) == expected
@@ -74,13 +74,13 @@ def test_risk_formula(cvss, signal, runtime, expected):
 def test_score_vulnerability_factors_and_fallbacks():
     kev = VulnerabilityInfo(id="X", cvss_score=9.8, cvss_source="vector", in_kev=True, epss=0.1)
     s = score_vulnerability(kev, "production")
-    assert s.score == 98.0 and s.priority == "high" and not s.provisional and s.missing_data == []
+    assert s.score == 87.3 and s.priority == "critical" and not s.provisional and s.missing_data == []
     assert s.factors.exploit_source == "cisa_kev" and s.factors.exploit_signal == 1.0
 
     unknown = VulnerabilityInfo(id="Y", in_kev=None)
     s = score_vulnerability(unknown, "unknown")
-    assert s.factors.cvss == 5.0 and s.factors.exploit_source == "unknown" and s.factors.runtime_factor == 1.0
-    assert s.score == 10.0 and s.priority == "low"
+    assert s.factors.cvss == 5.0 and s.factors.exploit_source == "unknown" and s.factors.runtime_factor == 0.5
+    assert s.score == 45.5 and s.priority == "medium"
     assert s.provisional and s.missing_data == ["cvss", "exploit_evidence", "runtime_context"]
     assert any("provisional" in n for n in s.notes)
     assert any("not evidence of safety" in n for n in s.notes)
@@ -102,27 +102,28 @@ def test_demo_end_to_end(client):
     assert report["status"] == "completed" and report["source"]["type"] == "demo"
     assert report["data_sources"][0]["status"] == "synthetic"
     s = report["summary"]
-    assert (s["vulnerable_packages"], s["affected_projects"], s["high_priority_findings"]) == (3, 4, 1)
+    assert (s["vulnerable_packages"], s["affected_projects"], s["high_priority_findings"]) == (3, 4, 2)
 
     url = next(f for f in report["findings"] if f["package"] == "@hyron-demo/url-parser")
     rel = {a["project"]: (a["relation"], a["runtime_context"], a["risk"]["score"]) for a in url["affected_projects"]}
     assert rel == {
-        "payments-api": ("direct", "production", 98.0),
-        "checkout-service": ("transitive", "production", 98.0),
-        "reporting-worker": ("transitive", "production", 98.0),
-        "admin-portal": ("transitive", "development", 39.2),
+        "payments-api": ("direct", "production", 96.3),
+        "checkout-service": ("transitive", "production", 96.3),
+        "reporting-worker": ("transitive", "production", 96.3),
+        "admin-portal": ("transitive", "development", 84.3),
     }
     # The http-client advisory only covers 1.x, so 2.3.0 must not be reported.
     assert all(f["vulnerability"]["id"] != "HYRON-DEMO-2026-0004" for f in report["findings"])
 
     plan = report["patch_plan"]
     assert [p["package"] for p in plan] == [
-        "@hyron-demo/url-parser", "@hyron-demo/logger", "@hyron-demo/yaml-lite",
+        "@hyron-demo/url-parser", "@hyron-demo/yaml-lite", "@hyron-demo/logger",
     ]
     assert [p["order"] for p in plan] == [1, 2, 3]
     assert plan[0]["recommended_version"] == "1.4.5" and plan[0]["fix_status"] == "fix_available"
     assert plan[0]["affected_projects"][-1] == "admin-portal"  # dev-only exposure last
-    assert plan[2]["recommended_version"] is None and plan[2]["fix_status"] == "no_fix_known"
+    no_fix = next(p for p in plan if p["fix_status"] == "no_fix_known")
+    assert no_fix["recommended_version"] is None and no_fix["package"] == "@hyron-demo/yaml-lite"
 
     g = client.get(f"/api/graph/{report['scan_id']}").json()
     status = {n["label"]: n["status"] for n in g["nodes"]}

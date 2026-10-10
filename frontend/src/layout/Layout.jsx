@@ -24,8 +24,9 @@ export const NAV = [
 function LogoMark({ className = "h-8 w-8" }) {
   return (
     <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
-      <path d="M16 2 4 7v8c0 7 5 12.5 12 15 7-2.5 12-8 12-15V7z" fill="#14b8a6" />
-      <path d="M10.5 12v8M21.5 12v8M10.5 16h11" stroke="#020617" strokeWidth="2.6" strokeLinecap="round" />
+      <path d="M16 2 4 7v8c0 7 5 12.5 12 15 7-2.5 12-8 12-15V7z" fill="#2AABA1" />
+      <path d="M8 10.5h4v11H8zm12 0h4v11h-4zM12 14h8v4h-8z" fill="#071311" />
+      <path d="M16 4.8 6.8 8.7v6.1c0 5.6 3.7 10 9.2 12.3" fill="none" stroke="#FFE2AF" strokeWidth="1" opacity=".72" />
     </svg>
   );
 }
@@ -35,8 +36,8 @@ function Logo() {
     <Link to="/" className="flex items-center gap-2.5 px-2">
       <LogoMark />
       <div className="leading-tight">
-        <p className="text-[15px] font-bold tracking-tight text-white">HYRON <span className="text-teal-400">AI</span></p>
-        <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">Supply-chain security</p>
+        <p className="text-[15px] font-bold tracking-[0.08em] text-white">HYRON <span className="text-teal-400">AI</span></p>
+        <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">Exposure intelligence</p>
       </div>
     </Link>
   );
@@ -66,7 +67,7 @@ function SidebarNav({ onNavigate }) {
           <span className={cn("h-2 w-2 rounded-full", health.status === "ok" ? "bg-emerald-400" : health.status === "checking" ? "bg-slate-500" : "bg-red-400")} />
           {health.status === "ok" ? `API online - v${health.version}` : health.status === "checking" ? "Checking API..." : "API offline"}
         </div>
-        <p className="mt-1.5">See the risk. Trace the impact. Fix it.</p>
+        <p className="mt-1.5 font-mono text-[10px] leading-4">OBSERVE / PRIORITIZE / REMEDIATE</p>
       </div>
     </div>
   );

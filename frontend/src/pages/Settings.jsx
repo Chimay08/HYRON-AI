@@ -57,15 +57,17 @@ export default function Settings() {
           )}
         </Panel>
 
-        <Panel title="HYRON Risk Score" description="Project-specific heuristic - not an industry standard">
+        <Panel title="V-RPS" description="Project-specific remediation-priority heuristic - not an industry standard">
           {!risk ? <Loading /> : (
             <div className="space-y-3 text-sm text-slate-400">
               <p className="rounded-lg bg-slate-950 px-3 py-2 font-mono text-xs text-teal-200">{risk.formula}</p>
               <ul className="space-y-1">
-                <li>Exploit signal: CISA KEV = {risk.weights.kev_signal}, otherwise EPSS probability; floor {risk.weights.exploit_floor}.</li>
+                <li>Weights: severity {risk.weights.severity}, exploit evidence {risk.weights.exploit_evidence}, exposure {risk.weights.exposure}, propagation {risk.weights.propagation}.</li>
+                <li>Exploit evidence: CISA KEV = 100, otherwise EPSS probability x 100.</li>
                 <li>Runtime factor: production {risk.weights.runtime_factors.production}, development {risk.weights.runtime_factors.development}, unknown {risk.weights.runtime_factors.unknown}.</li>
-                <li>Missing evidence: CVSS placeholder {risk.fallbacks.cvss_unknown} (score marked provisional), exploit signal {risk.fallbacks.exploit_unknown}, unknown runtime scored as production.</li>
-                <li>Priority: high &gt;= {risk.priority_thresholds.high}, medium &gt;= {risk.priority_thresholds.medium}.</li>
+                <li>Propagation: {risk.weights.propagation_points_per_project} points per distinct affected project, capped at 100.</li>
+                <li>Missing evidence uses disclosed neutral placeholders and marks the score provisional.</li>
+                <li>Priority: critical &gt;= {risk.priority_thresholds.critical}, high &gt;= {risk.priority_thresholds.high}, medium &gt;= {risk.priority_thresholds.medium}.</li>
               </ul>
             </div>
           )}
