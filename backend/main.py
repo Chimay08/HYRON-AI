@@ -13,7 +13,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 
 ROOT = Path(__file__).resolve().parent
 # Support both documented development launch styles:
@@ -86,6 +86,11 @@ app.include_router(scan.router)
 app.include_router(repositories.router)
 app.include_router(graph.router)
 app.include_router(reports.router)
+
+
+@app.get("/", include_in_schema=False)
+async def root():
+    return RedirectResponse(url="/docs")
 
 
 @app.get("/health", tags=["meta"])

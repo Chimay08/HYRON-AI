@@ -170,6 +170,9 @@ def test_patch_plan_flags_range_min_and_major_bump():
 
 def test_api_errors(client):
     assert client.get("/health").json()["status"] == "ok"
+    root = client.get("/", follow_redirects=False)
+    assert root.status_code == 307
+    assert root.headers["location"] == "/docs"
     assert client.get("/api/graph/nope").status_code == 404
     assert client.get("/api/reports/nope").status_code == 404
     r = client.post("/api/scan", files={"files": ("setup.py", b"x")})
