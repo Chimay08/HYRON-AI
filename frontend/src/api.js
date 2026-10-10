@@ -42,7 +42,11 @@ export function resetWorkspaceId() {
   return workspaceId;
 }
 
-const http = axios.create({ baseURL: import.meta.env.VITE_API_BASE ?? "", timeout: 180_000 });
+// Production uses same-origin Vercel rewrites so browser privacy tools never
+// need to contact the Render hostname directly. Development may still opt out
+// of the local Vite proxy by setting VITE_API_BASE.
+const apiBase = import.meta.env.DEV ? (import.meta.env.VITE_API_BASE ?? "") : "";
+const http = axios.create({ baseURL: apiBase, timeout: 180_000 });
 
 http.interceptors.request.use((config) => {
   config.headers["X-Workspace-Id"] = getWorkspaceId();
